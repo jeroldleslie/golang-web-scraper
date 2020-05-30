@@ -1,0 +1,52 @@
+version: "3"
+services:
+  postgres:
+    restart: 'always'
+    ports:
+      - "5432:5432"
+    environment:
+      - "DB_USER=cityfalcon"
+      - "DB_PASSWORD=cityfalcon"
+      - "DB_DATABASE=cityfalcon"
+      - "POSTGRES_USER=docker"
+      - "POSTGRES_PASSWORD=docker"
+    build: './db'
+    container_name: "postgres"
+    networks:
+      - backend
+  ingestor:
+    build:
+      context: .
+      dockerfile: ingestor/Dockerfile
+    container_name: "ingestor"
+    restart: always
+    volumes:
+      - .:/golang-web-scraper
+    environment:
+      - "DB_USER=cityfalcon"
+      - "DB_PASSWORD=cityfalcon"
+      - "DB_DATABASE=cityfalcon"
+      - "POSTGRESS_ADDRESS=postgres:5432"
+      - "NUM_WORKERS=20"
+    networks:
+      - backend
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: "api"
+    restart: always
+    ports:
+    - "1323:1323"
+    volumes:
+    - .:/golang-web-scraper
+    environment:
+    - "DB_USER=cityfalcon"
+    - "DB_PASSWORD=cityfalcon"
+    - "DB_DATABASE=cityfalcon"
+    - "POSTGRESS_ADDRESS=postgres:5432"
+    networks:
+    - backend
+
+networks:
+  backend:
